@@ -1704,9 +1704,347 @@
       }
     }
 
+  
+    /* ========================================================================== */
+    /* CAPA DE ACESSO INSTITUCIONAL & TELA DE BLOQUEIO (LOCK SCREEN)              */
+    /* ========================================================================== */
+    body.is-locked {
+      overflow: hidden !important;
+      height: 100vh !important;
+    }
+    body.is-locked .top-navbar,
+    body.is-locked .report-container {
+      filter: blur(14px);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    #portal-lockscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at 50% 20%, #134888 0%, #0B2265 45%, #050E26 100%);
+      z-index: 9999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.45s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #portal-lockscreen.unlocked {
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(1.04);
+      pointer-events: none;
+    }
+
+    .lock-card {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 24px;
+      box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.2);
+      width: 100%;
+      max-width: 490px;
+      padding: 36px 32px;
+      text-align: center;
+      position: relative;
+      animation: lockCardEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes lockCardEntrance {
+      from {
+        opacity: 0;
+        transform: translateY(24px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .lock-logos-pill {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 999px;
+      padding: 8px 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+    .lock-logos-pill img {
+      height: 38px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .lock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FDE68A;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 14px;
+    }
+
+    .lock-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #0B2265;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+      line-height: 1.25;
+    }
+
+    .lock-sub {
+      font-size: 13px;
+      color: #64748B;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .lock-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .lock-input-wrap {
+      position: relative;
+      width: 100%;
+    }
+    .lock-input {
+      width: 100%;
+      padding: 14px 44px 14px 44px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-radius: 12px;
+      border: 2px solid #CBD5E1;
+      background: #F8FAFC;
+      color: #0F172A;
+      outline: none;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .lock-input:focus {
+      background: #FFFFFF;
+      border-color: #289BD6;
+      box-shadow: 0 0 0 4px rgba(40, 155, 214, 0.2);
+    }
+    .lock-input-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: #64748B;
+      pointer-events: none;
+    }
+    .lock-input-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #64748B;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+    .lock-input-toggle:hover {
+      color: #0F172A;
+    }
+
+    .lock-btn-submit {
+      background: linear-gradient(135deg, #0B2265 0%, #134888 100%);
+      color: #FFFFFF;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 20px rgba(11, 34, 101, 0.25);
+    }
+    .lock-btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(11, 34, 101, 0.35);
+      background: linear-gradient(135deg, #07153B 0%, #0B2265 100%);
+    }
+    .lock-btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .lock-checkbox-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748B;
+      margin-top: 4px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .lock-checkbox-row input {
+      cursor: pointer;
+      accent-color: #0B2265;
+    }
+
+    .lock-error-box {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      color: #991B1B;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .lock-error-box.active {
+      display: flex;
+      animation: lockShake 0.4s ease;
+    }
+    @keyframes lockShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    .lock-success-box {
+      background: #ECFDF5;
+      border: 1px solid #A7F3D0;
+      color: #065F46;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .lock-success-box.active {
+      display: flex;
+    }
+
+    .lock-footer-info {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid #E2E8F0;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94A3B8;
+    }
+
+    .lock-nav-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
+      padding: 6px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .lock-nav-btn:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: #F87171;
+    }
+
   </style>
 </head>
 <body>
+
+  <!-- ===================================================================== -->
+  <!-- CAPA DE ACESSO RESTRITO & SEGURANÇA INSTITUCIONAL                     -->
+  <!-- ===================================================================== -->
+  <div id="portal-lockscreen">
+    <div class="lock-card" id="lock-card-box">
+      <div class="lock-logos-pill">
+        <img src="/logo_cooeducar.png" alt="Cooeducar">
+        <img src="/logo_obli.png" alt="OBLI" style="height: 34px;">
+        <img src="/logo_seleta.png" alt="Seleta" style="height: 30px;">
+      </div>
+
+      <div class="lock-badge">
+        <span>🔒</span> Acesso Restrito & Institucional
+      </div>
+
+      <div class="lock-title">
+        OBLI 2024.2 • COOEDUCAR
+      </div>
+      <div class="lock-sub">
+        Relatório Oficial e Confidencial de Desempenho Escolar.<br>
+        Insira a chave de segurança para acessar as notas e os boletins.
+      </div>
+
+      <form class="lock-form" onsubmit="handleUnlock(event)">
+        <div class="lock-input-wrap">
+          <span class="lock-input-icon">🔑</span>
+          <input type="password" id="lock-password-input" class="lock-input" placeholder="Digite o código de acesso..." autocomplete="current-password" autofocus required>
+          <button type="button" class="lock-input-toggle" onclick="togglePasswordVisibility()" title="Mostrar/Ocultar código">
+            <span id="eye-icon">👁️</span>
+          </button>
+        </div>
+
+        <button type="submit" class="lock-btn-submit" id="lock-submit-btn">
+          <span>🔓 Desbloquear Portal</span>
+        </button>
+
+        <label class="lock-checkbox-row">
+          <input type="checkbox" id="lock-remember-check" checked>
+          <span>Lembrar meu acesso neste dispositivo</span>
+        </label>
+
+        <div class="lock-error-box" id="lock-error-msg">
+          <span>⚠️</span> Código incorreto. Verifique a senha institucional.
+        </div>
+
+        <div class="lock-success-box" id="lock-success-msg">
+          <span>✓</span> Acesso autorizado! Carregando resultados...
+        </div>
+      </form>
+
+      <div class="lock-footer-info">
+        Cooperativa Educacional de Carlos Chagas • OBLI 2024.2
+      </div>
+    </div>
+  </div>
+
 
   <!-- BARRA DE NAVEGAÇÃO INTERATIVA -->
   <nav class="top-navbar">
@@ -1727,6 +2065,9 @@
 <button class="nav-btn" onclick="filterSection('sala-7', this)">3ª SÉRIE</button>
     </div>
     <div style="display: flex; align-items: center; gap: 8px;">
+      <button class="lock-nav-btn" onclick="lockPortal()" title="Bloquear portal e exigir senha novamente">
+        🔒 Bloquear
+      </button>
       <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Alternar entre modo claro e escuro">
         🌙 Modo Escuro
       </button>
@@ -9091,6 +9432,7 @@
 
     // Inicialização ao carregar página
     document.addEventListener('DOMContentLoaded', () => {
+      checkPortalAuth();
       initTheme();
       renderCards();
       setupClickableElements();
@@ -9425,6 +9767,101 @@
         }
       });
     }
+  
+    // ==========================================================================
+    // SISTEMA DE PROTEÇÃO POR SENHA INSTITUCIONAL (COOEDUCARINGLES)
+    // ==========================================================================
+    const AUTH_KEY = 'cooeducar_obli_auth_v1';
+    const MASTER_HASH = 'COOEDUCARINGLES';
+
+    function checkPortalAuth() {
+      const isAuth = localStorage.getItem(AUTH_KEY) === 'true' || sessionStorage.getItem(AUTH_KEY) === 'true';
+      const lockScreen = document.getElementById('portal-lockscreen');
+      if (isAuth) {
+        if (lockScreen) lockScreen.classList.add('unlocked');
+        document.body.classList.remove('is-locked');
+      } else {
+        if (lockScreen) lockScreen.classList.remove('unlocked');
+        document.body.classList.add('is-locked');
+        setTimeout(() => {
+          const input = document.getElementById('lock-password-input');
+          if (input) input.focus();
+        }, 150);
+      }
+    }
+
+    function handleUnlock(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('lock-password-input');
+      const errorMsg = document.getElementById('lock-error-msg');
+      const successMsg = document.getElementById('lock-success-msg');
+      const rememberCheck = document.getElementById('lock-remember-check');
+      const lockScreen = document.getElementById('portal-lockscreen');
+
+      if (!input) return;
+      const entered = input.value.trim().toUpperCase();
+
+      if (entered === MASTER_HASH) {
+        if (errorMsg) errorMsg.classList.remove('active');
+        if (successMsg) successMsg.classList.add('active');
+
+        // Salvar autenticação
+        if (rememberCheck && rememberCheck.checked) {
+          localStorage.setItem(AUTH_KEY, 'true');
+        } else {
+          sessionStorage.setItem(AUTH_KEY, 'true');
+        }
+
+        setTimeout(() => {
+          if (lockScreen) lockScreen.classList.add('unlocked');
+          document.body.classList.remove('is-locked');
+          if (successMsg) successMsg.classList.remove('active');
+        }, 400);
+      } else {
+        if (errorMsg) {
+          errorMsg.classList.remove('active');
+          void errorMsg.offsetWidth; // trigger reflow for animation restart
+          errorMsg.classList.add('active');
+        }
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    function lockPortal() {
+      localStorage.removeItem(AUTH_KEY);
+      sessionStorage.removeItem(AUTH_KEY);
+      const lockScreen = document.getElementById('portal-lockscreen');
+      const input = document.getElementById('lock-password-input');
+      const errorMsg = document.getElementById('lock-error-msg');
+      const successMsg = document.getElementById('lock-success-msg');
+
+      if (errorMsg) errorMsg.classList.remove('active');
+      if (successMsg) successMsg.classList.remove('active');
+      if (input) input.value = '';
+
+      if (lockScreen) lockScreen.classList.remove('unlocked');
+      document.body.classList.add('is-locked');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (input) input.focus();
+    }
+
+    function togglePasswordVisibility() {
+      const input = document.getElementById('lock-password-input');
+      const eye = document.getElementById('eye-icon');
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (eye) eye.innerText = '🙈';
+      } else {
+        input.type = 'password';
+        if (eye) eye.innerText = '👁️';
+      }
+    }
+
+    // Executa verificação inicial imediata
+    checkPortalAuth();
+
   </script>
 
 </body>
