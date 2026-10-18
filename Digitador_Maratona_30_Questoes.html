@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digitação de Gabaritos — Maratona 2026 (Modo Ditado Contínuo)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    input.q-box {
+      text-transform: uppercase;
+      font-weight: 700;
+      text-align: center;
+      transition: all 0.12s ease-in-out;
+    }
+    input.q-box:focus {
+      outline: none;
+      transform: scale(1.1);
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+      background-color: #eff6ff;
+      z-index: 10;
+    }
+    .correct-ans {
+      background-color: #dcfce7 !important;
+      border-color: #22c55e !important;
+      color: #15803d !important;
+    }
+    .wrong-ans {
+      background-color: #fee2e2 !important;
+      border-color: #ef4444 !important;
+      color: #b91c1c !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <!-- Header -->
+  <header class="bg-indigo-950 text-white py-4 px-6 shadow-md sticky top-0 z-40 border-b border-indigo-900">
+    <div class="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2.5">
+          <span class="bg-amber-400 text-slate-950 text-xs font-black px-2.5 py-0.5 rounded uppercase">Maratona 2026</span>
+          <h1 class="text-xl sm:text-2xl font-bold">Digitação & Correção de Gabaritos</h1>
+        </div>
+        <p class="text-indigo-200 text-xs mt-0.5">Criado especialmente para o Davi e o Breno acelerarem a digitação!</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="btnCopyChat" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg shadow transition flex items-center gap-2">
+          📋 Copiar Respostas p/ o Chat
+        </button>
+        <button id="btnDownloadCsv" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg shadow transition flex items-center gap-2">
+          📥 Baixar CSV Atualizado
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-[1440px] mx-auto p-4 sm:p-6 space-y-6">
+
+    <!-- SELETOR DE MODO: DITADO CONTÍNUO VS TABELA COMPLETA -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-bold uppercase text-slate-400">Modo de Digitação:</span>
+        <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+          <button id="btnModeDitado" class="px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow transition flex items-center gap-2">
+            ⚡ Modo Ditado do Breno (Ultra Rápido)
+          </button>
+          <button id="btnModeTabela" class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-2">
+            📊 Visão Geral em Tabela
+          </button>
+        </div>
+      </div>
+
+      <!-- Seletor de Turma -->
+      <div class="flex flex-wrap items-center gap-1.5" id="turmaTabs">
+        <!-- Injetado por JS -->
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODO 1: DITADO ULTRA RÁPIDO (CAMPO ÚNICO) -->
+    <!-- ======================================================== -->
+    <section id="viewDitado" class="bg-white border-2 border-indigo-200 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <span id="ditadoTurmaBadge" class="bg-indigo-100 text-indigo-700 font-bold text-xs px-2.5 py-1 rounded-full uppercase">7º ANO</span>
+            <span class="text-xs text-slate-400 font-medium">Aluno <span id="ditadoIndex">1</span> de <span id="ditadoTotal">20</span></span>
+          </div>
+          <h2 id="ditadoStudentName" class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">Alice De Souza Bossi Lima</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">
+            🎙️ <strong>Breno dita e você digita:</strong> apenas aperte as letras (<kbd class="px-1.5 py-0.5 bg-slate-200 rounded font-mono text-xs">A</kbd> <kbd class="px-1.5 py-0.5 bg-slate-200 rounded font-mono text-xs">B</kbd> <kbd class="px-1.5 py-0.5 bg-slate-200 rounded font-mono text-xs">C</kbd> <kbd class="px-1.5 py-0.5 bg-slate-200 rounded font-mono text-xs">D</kbd> <kbd class="px-1.5 py-0.5 bg-slate-200 rounded font-mono text-xs">E</kbd>) seguidas sem parar. Ao bater 30 letras, <strong>ele salva e pula pro próximo aluno sozinho!</strong>
+          </p>
+        </div>
+
+        <!-- Botões de Navegação de Aluno -->
+        <div class="flex items-center gap-2 self-stretch sm:self-auto justify-between">
+          <button id="btnDitadoPrev" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-xs font-bold text-slate-700 transition">
+            ◀ Anterior
+          </button>
+          <button id="btnDitadoNext" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white transition shadow">
+            Próximo ▶
+          </button>
+        </div>
+      </div>
+
+      <!-- Grande Campo de Digitação Contínua -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <label for="ditadoInput" class="text-xs font-bold uppercase tracking-wider text-indigo-950 flex items-center gap-2">
+            <span>✍️ Digite a sequência contínua (30 letras):</span>
+            <span id="ditadoLiveScore" class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full hidden">Acertos: 0 / 30</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <span id="ditadoCounter" class="text-sm font-black text-indigo-600">0 / 30</span>
+            <button id="btnClearCurrent" class="text-xs text-rose-500 hover:underline">Limpar</button>
+          </div>
+        </div>
+
+        <input type="text" id="ditadoInput" autofocus
+               placeholder="Clique aqui e digite: ex: ebaeedaddccebe..."
+               maxlength="30"
+               class="w-full text-2xl sm:text-3xl font-mono uppercase tracking-[0.35em] text-center py-4 px-4 border-2 border-indigo-400 focus:border-indigo-600 rounded-2xl bg-indigo-50/40 text-indigo-950 shadow-inner focus:outline-none focus:ring-4 focus:ring-indigo-200 transition">
+
+        <!-- Barra de Progresso das 30 questões -->
+        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+          <div id="ditadoProgress" class="bg-indigo-600 h-full transition-all duration-150" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Grade Visual com as 30 Caixinhas do Aluno Atual -->
+      <div class="space-y-2">
+        <span class="text-xs font-bold text-slate-400 uppercase">Conferência Visual em Tempo Real:</span>
+        <div class="grid grid-cols-10 sm:grid-cols-15 md:grid-cols-30 gap-1" id="ditadoBadges">
+          <!-- 30 badges injetados via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- MODO 2: VISÃO GERAL EM TABELA (TODAS AS TURMAS) -->
+    <!-- ======================================================== -->
+    <div id="viewTabela" class="space-y-8 hidden">
+      <!-- Container das Turmas injetado por JS -->
+      <div id="turmasContainer" class="space-y-8"></div>
+    </div>
+
+  </main>
+
+  <script>
+    const INITIAL_ANSWERS = {"6ano": {"1": ["B", "A", "D", "D", "B", "B", "D", "A", "D", "E", "C", "C", "A", "E", "D", "A", "D", "C", "B", "A", "C", "B", "C", "B", "A", "C", "D", "E", "D", "B"], "2": ["E", "C", "E", "E", "E", "D", "E", "D", "D", "C", "C", "E", "D", "E", "D", "B", "C", "B", "B", "C", "B", "B", "C", "D", "A", "C", "C", "B", "C", "E"], "3": ["B", "A", "A", "A", "A", "B", "E", "B", "D", "C", "A", "A", "A", "A", "C", "C", "D", "C", "A", "A", "A", "B", "B", "B", "A", "B", "B", "C", "C", "E"], "4": ["A", "A", "A", "E", "E", "D", "E", "D", "C", "C", "C", "B", "B", "E", "E", "E", "B", "C", "C", "A", "D", "B", "C", "B", "A", "A", "C", "E", "C", "E"], "6": ["E", "A", "A", "A", "A", "A", "E", "A", "A", "E", "C", "E", "B", "E", "D", "B", "A", "A", "B", "B", "D", "B", "D", "D", "A", "E", "A", "B", "C", "E"], "7": ["E", "C", "A", "B", "A", "D", "E", "D", "B", "C", "C", "C", "B", "E", "E", "A", "B", "D", "D", "C", "D", "B", "D", "D", "A", "E", "D", "E", "C", "C"], "8": ["B", "D", "A", "", "C", "B", "A", "A", "B", "D", "D", "B", "D", "B", "E", "A", "B", "C", "B", "D", "C", "D", "D", "E", "E", "C", "D", "C", "D", "C"], "9": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "10": ["B", "A", "E", "A", "A", "B", "E", "D", "E", "B", "A", "C", "B", "E", "A", "A", "D", "B", "B", "D", "C", "B", "E", "D", "D", "C", "A", "D", "C", "A"], "11": ["E", "D", "E", "C", "E", "B", "C", "B", "E", "B", "D", "C", "A", "D", "A", "D", "B", "A", "B", "B", "C", "A", "B", "B", "E", "C", "D", "B", "C", "D"], "12": ["E", "D", "D", "A", "E", "A", "E", "B", "A", "E", "D", "E", "B", "E", "B", "C", "B", "B", "C", "C", "C", "B", "B", "B", "E", "B", "B", "E", "C", "B"], "13": ["B", "D", "E", "A", "C", "C", "A", "A", "B", "E", "D", "B", "A", "C", "D", "D", "B", "B", "D", "B", "D", "B", "B", "D", "A", "A", "A", "B", "B", "A"]}, "7ano": {"1": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "2": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "3": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "4": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "5": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "6": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "7": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "8": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "9": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "10": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "11": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "12": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "13": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "14": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "15": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "16": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "17": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "18": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "19": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "20": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]}, "8ano": {"1": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "2": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "3": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "4": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "5": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "6": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "7": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]}, "9ano": {"1": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "2": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "3": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "4": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "5": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "7": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "8": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "9": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "10": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]}, "1serie": {"1": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "2": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "3": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "4": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "5": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "6": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "7": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "8": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]}, "2serie": {"1": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "2": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "3": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "4": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "5": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "6": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "7": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "8": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "9": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "10": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]}, "3serie": {"1": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "2": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "3": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "4": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "5": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "6": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "7": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "8": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "9": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "10": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "11": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "12": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]}};
+
+    const TURMAS_DATA = [
+      {
+        id: "6ano",
+        nome: "6º ANO",
+        alunos: [
+          { num: 1, name: "Aisha Santos David" },
+          { num: 2, name: "Ana Júlia Bomfim Coutinho" },
+          { num: 3, name: "Arthur Vieira Trindade" },
+          { num: 4, name: "Benício Paim De Souza Jardim" },
+          { num: 6, name: "Daniel Dias Souto" },
+          { num: 7, name: "Davi Laender Norte Brito" },
+          { num: 8, name: "Davi Rocha Aguiar" },
+          { num: 9, name: "Dely Cotrim Batista Coelho" },
+          { num: 10, name: "Laura Andrade Coelho Dos Santos" },
+          { num: 11, name: "Laura Gomes Prates" },
+          { num: 12, name: "Maria Clara Almeida Coutinho" },
+          { num: 13, name: "Valentina Silva Soares" }
+        ]
+      },
+      {
+        id: "7ano",
+        nome: "7º ANO",
+        alunos: [
+          { num: 1, name: "Alice De Souza Bossi Lima" },
+          { num: 2, name: "Cauã Jimenez Figueiredo Costa" },
+          { num: 3, name: "Isabela Lima Barbosa" },
+          { num: 4, name: "Isadora Amaral Santos" },
+          { num: 5, name: "Isis Costa Rodrigues De Oliveira" },
+          { num: 6, name: "Isly De Souza Jardim Ferreira" },
+          { num: 7, name: "Iuri Emanuel Lisboa Coutinho" },
+          { num: 8, name: "Júlia Aguilar Vieira De Sousa Lima" },
+          { num: 9, name: "Kauay Francisco Almeida Honorato" },
+          { num: 10, name: "Lavínia Ribeiro Sena" },
+          { num: 11, name: "Lavínia Silva Teles" },
+          { num: 12, name: "Lucas Alves Silva Batista" },
+          { num: 13, name: "Luísa Brauer Torres Nacur Quaresma" },
+          { num: 14, name: "Luna Januzzi Quadros" },
+          { num: 15, name: "Maria Cecília Rebouças" },
+          { num: 16, name: "Maria Clara Nogueira Tinoco" },
+          { num: 17, name: "Raíssa Soares Rodrigues" },
+          { num: 18, name: "Sâmya Ramos Silva" },
+          { num: 19, name: "Sophia Luanny de Jesus Silva" },
+          { num: 20, name: "Tito Teles Machado" }
+        ]
+      },
+      {
+        id: "8ano",
+        nome: "8º ANO",
+        alunos: [
+          { num: 1, name: "Davi Sedlmayer Jardim Lauar" },
+          { num: 2, name: "Isadora Quaresma Silveira" },
+          { num: 3, name: "Jolie Meireles Silva" },
+          { num: 4, name: "Miguel Bento Gomes Silva" },
+          { num: 5, name: "Ruan Batista Neves" },
+          { num: 6, name: "Tiago De Figueiredo Martins Filho" },
+          { num: 7, name: "Vicente Soares Almeida Jardim" }
+        ]
+      },
+      {
+        id: "9ano",
+        nome: "9º ANO",
+        alunos: [
+          { num: 1, name: "Henry Alves Franco" },
+          { num: 2, name: "Isa Nascimento Almeida" },
+          { num: 3, name: "Isadora Lima Barbosa" },
+          { num: 4, name: "Isaque Ferreira e Santos" },
+          { num: 5, name: "Isis Fonseca Batista" },
+          { num: 7, name: "João Antônio Santana De Almeida" },
+          { num: 8, name: "Júlia Vitória Amaral Soares" },
+          { num: 9, name: "Pedro Gabriel Dutra Souza" },
+          { num: 10, name: "Sophie De Deus Amantes" }
+        ]
+      },
+      {
+        id: "1serie",
+        nome: "1ª SÉRIE",
+        alunos: [
+          { num: 1, name: "Ana Beatriz Soares Norte" },
+          { num: 2, name: "Aryane Alves Silva" },
+          { num: 3, name: "Bruno De Souza Tomich" },
+          { num: 4, name: "Lisi Mendes Rodrigues Trindade" },
+          { num: 5, name: "Luis Felipe Lopes Fonte Nogueira" },
+          { num: 6, name: "Maria Clara Santos Boa Sorte" },
+          { num: 7, name: "Maysa Reis De Oliveira" },
+          { num: 8, name: "Yasmin Rodrigues de Souza Vieira" }
+        ]
+      },
+      {
+        id: "2serie",
+        nome: "2ª SÉRIE",
+        alunos: [
+          { num: 1, name: "Anne Beatrice Oliveira Costa" },
+          { num: 2, name: "Eros Cantão Cangussu" },
+          { num: 3, name: "Isa Silva Nogueira De Oliveira" },
+          { num: 4, name: "João Gabriel Dias Souto" },
+          { num: 5, name: "João Pedro Aguilar Vieira Braga" },
+          { num: 6, name: "Luiz Fernando Alves Da Silva Filho" },
+          { num: 7, name: "Mariana Quaresma Silveira" },
+          { num: 8, name: "Melissa Silva Cardoso" },
+          { num: 9, name: "Sam Antunes Cabral" },
+          { num: 10, name: "Sara Barbosa Da Silva" }
+        ]
+      },
+      {
+        id: "3serie",
+        nome: "3ª SÉRIE",
+        alunos: [
+          { num: 1, name: "Allicia Sena De Figueiredo" },
+          { num: 2, name: "Ana Maria Ferreira Morais" },
+          { num: 3, name: "Breno Martins Coelho Da Cruz" },
+          { num: 4, name: "Davy Luca Galvao Da Silva" },
+          { num: 5, name: "João Gabriel Lemes Almeida Dos Santos" },
+          { num: 6, name: "Joaquim Amaral Mendes" },
+          { num: 7, name: "Kevyn Leonardo Ramos Rodrigues" },
+          { num: 8, name: "Laura Lima Porto" },
+          { num: 9, name: "Maria Eduarda Rebouças Brandão" },
+          { num: 10, name: "Maria Laura Alves Luz" },
+          { num: 11, name: "Samuel Sedlmayer Souza" },
+          { num: 12, name: "Vitor José Rodrigues Jardim" }
+        ]
+      }
+    ];
+
+    const DEFAULT_GAB_6_7 = ["E","B","A","E","E","D","A","D","D","C","C","E","B","E","E","E","E","C","B","D","A","B","D","B","A","E","A","E","C","E"];
+    const DEFAULT_GAB_8_9 = ["D","C","B","*","E","E","C","C","E","E","D","B","D","B","A","C","C","B","A","C","A","B","D","D","D","C","C","C","D","A"];
+
+    const STORAGE_KEY = "maratona_2026_ditado_v3";
+
+    let state = {
+      officialByTurma: {},
+      answers: {}
+    };
+
+    // Inicialização do estado
+    TURMAS_DATA.forEach(t => {
+      if (t.id === "6ano" || t.id === "7ano") {
+        state.officialByTurma[t.id] = [...DEFAULT_GAB_6_7];
+      } else if (t.id === "8ano" || t.id === "9ano") {
+        state.officialByTurma[t.id] = [...DEFAULT_GAB_8_9];
+      } else {
+        state.officialByTurma[t.id] = Array(30).fill("");
+      }
+
+      state.answers[t.id] = {};
+      t.alunos.forEach(a => {
+        // Carrega respostas iniciais do Excel se houver
+        if (INITIAL_ANSWERS[t.id] && INITIAL_ANSWERS[t.id][a.num]) {
+          state.answers[t.id][a.num] = INITIAL_ANSWERS[t.id][a.num];
+        } else {
+          state.answers[t.id][a.num] = Array(30).fill("");
+        }
+      });
+    });
+
+    // Carrega do LocalStorage se houver dados mais recentes
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.officialByTurma) {
+          Object.keys(parsed.officialByTurma).forEach(k => {
+            if (state.officialByTurma[k] && parsed.officialByTurma[k].some(x => x !== "")) {
+              state.officialByTurma[k] = parsed.officialByTurma[k];
+            }
+          });
+        }
+        if (parsed.answers) {
+          Object.keys(parsed.answers).forEach(tId => {
+            if (state.answers[tId]) {
+              Object.keys(parsed.answers[tId]).forEach(aNum => {
+                if (parsed.answers[tId][aNum] && parsed.answers[tId][aNum].some(x => x !== "")) {
+                  state.answers[tId][aNum] = parsed.answers[tId][aNum];
+                }
+              });
+            }
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateAllScores();
+    }
+
+    // ==========================================
+    // CONTROLE DO MODO DITADO
+    // ==========================================
+    // Começa no 7º ano já que o 6º ano já está preenchido!
+    let currentDitadoTurmaId = "7ano";
+    let currentDitadoStudentIdx = 0;
+
+    const ditadoTurmaBadge = document.getElementById("ditadoTurmaBadge");
+    const ditadoIndex = document.getElementById("ditadoIndex");
+    const ditadoTotal = document.getElementById("ditadoTotal");
+    const ditadoStudentName = document.getElementById("ditadoStudentName");
+    const ditadoInput = document.getElementById("ditadoInput");
+    const ditadoCounter = document.getElementById("ditadoCounter");
+    const ditadoProgress = document.getElementById("ditadoProgress");
+    const ditadoBadges = document.getElementById("ditadoBadges");
+    const ditadoLiveScore = document.getElementById("ditadoLiveScore");
+
+    function renderDitadoBadges() {
+      ditadoBadges.innerHTML = "";
+      const turma = TURMAS_DATA.find(t => t.id === currentDitadoTurmaId);
+      const aluno = turma.alunos[currentDitadoStudentIdx];
+      const answers = state.answers[turma.id][aluno.num];
+      const ofic = state.officialByTurma[turma.id];
+
+      for (let q = 0; q < 30; q++) {
+        const val = answers[q] || "";
+        const ofc = ofic[q] || "";
+        const div = document.createElement("div");
+        div.className = "flex flex-col items-center p-1 rounded-lg border text-center transition";
+
+        let bgClass = "bg-slate-50 border-slate-200 text-slate-400";
+        if (ofc === "*") {
+          bgClass = "bg-amber-100 border-amber-400 text-amber-900 font-bold";
+        } else if (val && ofc) {
+          bgClass = (val === ofc) ? "bg-emerald-100 border-emerald-400 text-emerald-800 font-bold" : "bg-rose-100 border-rose-400 text-rose-800 font-bold";
+        } else if (val) {
+          bgClass = "bg-indigo-50 border-indigo-300 text-indigo-700 font-bold";
+        }
+
+        div.className += " " + bgClass;
+        div.innerHTML = `
+          <span class="text-[9px] font-mono text-slate-500">Q${String(q+1).padStart(2, '0')}${ofc === '*' ? '★' : ''}</span>
+          <span class="text-xs font-black mt-0.5">${val || (ofc === '*' ? '★' : '—')}</span>
+        `;
+        ditadoBadges.appendChild(div);
+      }
+    }
+
+    function loadDitadoStudent() {
+      const turma = TURMAS_DATA.find(t => t.id === currentDitadoTurmaId);
+      const aluno = turma.alunos[currentDitadoStudentIdx];
+
+      ditadoTurmaBadge.textContent = turma.nome;
+      ditadoIndex.textContent = currentDitadoStudentIdx + 1;
+      ditadoTotal.textContent = turma.alunos.length;
+      ditadoStudentName.textContent = `#${aluno.num} — ${aluno.name}`;
+
+      const existingAnswers = state.answers[turma.id][aluno.num].join("");
+      ditadoInput.value = existingAnswers;
+      updateDitadoUI(existingAnswers);
+      renderDitadoBadges();
+      ditadoInput.focus();
+    }
+
+    function updateDitadoUI(cleanVal) {
+      const len = cleanVal.length;
+      ditadoCounter.textContent = `${len} / 30`;
+      ditadoProgress.style.width = `${(len / 30) * 100}%`;
+
+      const turma = TURMAS_DATA.find(t => t.id === currentDitadoTurmaId);
+      const ofic = state.officialByTurma[turma.id];
+      const hasOfic = ofic.some(x => x !== "");
+
+      if (hasOfic && len > 0) {
+        let hits = 0;
+        for (let i = 0; i < len; i++) {
+          if (ofic[i] && (ofic[i] === "*" || cleanVal[i] === ofic[i])) hits++;
+        }
+        ditadoLiveScore.textContent = `Acertos: ${hits} / ${ofic.filter(x => x).length}`;
+        ditadoLiveScore.classList.remove("hidden");
+      } else {
+        ditadoLiveScore.classList.add("hidden");
+      }
+    }
+
+    // Beep sonoro sutil ao completar 30 questões
+    function playBeep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.2);
+      } catch (e) {}
+    }
+
+    // Digitação fluida no Modo Ditado
+    ditadoInput.addEventListener("input", (e) => {
+      // Aceita apenas letras A-E ou qualquer letra
+      let raw = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
+      if (raw.length > 30) raw = raw.slice(0, 30);
+      e.target.value = raw;
+
+      const turma = TURMAS_DATA.find(t => t.id === currentDitadoTurmaId);
+      const aluno = turma.alunos[currentDitadoStudentIdx];
+
+      // Salva no estado
+      const arr = Array(30).fill("");
+      for (let i = 0; i < raw.length; i++) {
+        arr[i] = raw[i];
+      }
+      state.answers[turma.id][aluno.num] = arr;
+      saveState();
+
+      updateDitadoUI(raw);
+      renderDitadoBadges();
+
+      // AUTO-AVANÇO: Ao completar 30 letras, pula sozinho para o próximo aluno!
+      if (raw.length === 30) {
+        playBeep();
+        if (currentDitadoStudentIdx < turma.alunos.length - 1) {
+          setTimeout(() => {
+            currentDitadoStudentIdx++;
+            loadDitadoStudent();
+          }, 350);
+        } else {
+          // Fim da turma!
+          alert(`🎉 Parabéns! Todos os ${turma.alunos.length} alunos do ${turma.nome} foram concluídos com sucesso!`);
+        }
+      }
+    });
+
+    document.getElementById("btnDitadoPrev").addEventListener("click", () => {
+      if (currentDitadoStudentIdx > 0) {
+        currentDitadoStudentIdx--;
+        loadDitadoStudent();
+      }
+    });
+
+    document.getElementById("btnDitadoNext").addEventListener("click", () => {
+      const turma = TURMAS_DATA.find(t => t.id === currentDitadoTurmaId);
+      if (currentDitadoStudentIdx < turma.alunos.length - 1) {
+        currentDitadoStudentIdx++;
+        loadDitadoStudent();
+      }
+    });
+
+    document.getElementById("btnClearCurrent").addEventListener("click", () => {
+      const turma = TURMAS_DATA.find(t => t.id === currentDitadoTurmaId);
+      const aluno = turma.alunos[currentDitadoStudentIdx];
+      state.answers[turma.id][aluno.num] = Array(30).fill("");
+      saveState();
+      loadDitadoStudent();
+    });
+
+    // ==========================================
+    // ALTERNAR MODOS: DITADO VS TABELA
+    // ==========================================
+    const btnModeDitado = document.getElementById("btnModeDitado");
+    const btnModeTabela = document.getElementById("btnModeTabela");
+    const viewDitado = document.getElementById("viewDitado");
+    const viewTabela = document.getElementById("viewTabela");
+
+    btnModeDitado.addEventListener("click", () => {
+      btnModeDitado.className = "px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow transition flex items-center gap-2";
+      btnModeTabela.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-2";
+      viewDitado.classList.remove("hidden");
+      viewTabela.classList.add("hidden");
+      loadDitadoStudent();
+    });
+
+    btnModeTabela.addEventListener("click", () => {
+      btnModeTabela.className = "px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow transition flex items-center gap-2";
+      btnModeDitado.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center gap-2";
+      viewTabela.classList.remove("hidden");
+      viewDitado.classList.add("hidden");
+      renderAllTurmas();
+    });
+
+    // Seletor de Turmas nas Abas
+    function renderTabs() {
+      const container = document.getElementById("turmaTabs");
+      container.innerHTML = "";
+
+      TURMAS_DATA.forEach(t => {
+        const btn = document.createElement("button");
+        const isActive = (currentDitadoTurmaId === t.id);
+        btn.className = isActive
+          ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow transition"
+          : "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition";
+        btn.textContent = `${t.nome} (${t.alunos.length})`;
+        btn.onclick = () => {
+          currentDitadoTurmaId = t.id;
+          currentDitadoStudentIdx = 0;
+          renderTabs();
+          loadDitadoStudent();
+          renderAllTurmas();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    // ==========================================
+    // RENDERIZAÇÃO DA VISÃO EM TABELA
+    // ==========================================
+    function renderAllTurmas() {
+      const container = document.getElementById("turmasContainer");
+      container.innerHTML = "";
+
+      TURMAS_DATA.forEach(turma => {
+        const section = document.createElement("section");
+        section.id = `block-${turma.id}`;
+        section.className = "bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden";
+
+        let qHeaders = Array.from({ length: 30 }, (_, i) =>
+          `<th class="text-center font-mono py-1.5 px-0.5 w-6 text-[10px] text-slate-500">${String(i+1).padStart(2, '0')}</th>`
+        ).join("");
+
+        let officialCells = "";
+        for (let q = 0; q < 30; q++) {
+          const val = state.officialByTurma[turma.id][q] || "";
+          officialCells += `
+            <td class="p-0.5 text-center bg-amber-50/90 border-b-2 border-amber-300">
+              <input type="text" maxlength="1" class="q-box ofic-box w-6 h-7 border border-amber-400 rounded text-center text-xs font-black text-amber-900 bg-white"
+                     data-turma="${turma.id}" data-ofic-q="${q}" value="${val}">
+            </td>
+          `;
+        }
+
+        let rowsHtml = "";
+        turma.alunos.forEach((aluno, idx) => {
+          let studentCells = "";
+          for (let q = 0; q < 30; q++) {
+            const val = state.answers[turma.id][aluno.num][q] || "";
+            studentCells += `
+              <td class="p-0.5 text-center">
+                <input type="text" maxlength="1" class="q-box stu-box w-6 h-7 border border-slate-300 rounded text-center text-xs font-bold text-slate-800 bg-white"
+                       data-turma="${turma.id}" data-aluno="${aluno.num}" data-q="${q}" value="${val}">
+              </td>
+            `;
+          }
+          rowsHtml += `
+            <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'} hover:bg-indigo-50/30 transition">
+              <td class="py-1.5 px-2 text-center font-bold text-slate-400 text-xs">${aluno.num}</td>
+              <td class="py-1.5 px-3 font-semibold text-slate-800 whitespace-nowrap text-xs">${aluno.name}</td>
+              ${studentCells}
+              <td class="py-1.5 px-2 text-center font-bold text-indigo-700 text-xs whitespace-nowrap" id="score-${turma.id}-${aluno.num}">—</td>
+              <td class="py-1.5 px-2 text-center font-semibold text-slate-500 text-xs whitespace-nowrap" id="pct-${turma.id}-${aluno.num}">—</td>
+            </tr>
+          `;
+        });
+
+        section.innerHTML = `
+          <div class="bg-slate-900 text-white px-5 py-3 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+              <span class="bg-amber-400 text-slate-950 text-xs font-black px-2.5 py-0.5 rounded uppercase">${turma.nome}</span>
+              <span class="text-xs text-slate-300 font-medium">${turma.alunos.length} alunos</span>
+            </div>
+            <button class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded-lg font-bold"
+                    onclick="goToDitado('${turma.id}')">
+              ⚡ Ir para Modo Ditado desta turma
+            </button>
+          </div>
+          <div class="overflow-x-auto p-3">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-100 text-slate-700 text-[11px] font-bold uppercase border-b border-slate-300">
+                  <th class="py-2 px-2 text-center w-9">Nº</th>
+                  <th class="py-2 px-3 min-w-[210px]">Nome do Aluno</th>
+                  ${qHeaders}
+                  <th class="py-2 px-2 text-center min-w-[68px]">Acertos</th>
+                  <th class="py-2 px-2 text-center min-w-[54px]">%</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr class="bg-amber-50/90">
+                  <td class="py-2 px-2 text-center font-black text-amber-600 border-b-2 border-amber-300">★</td>
+                  <td class="py-2 px-3 font-black text-amber-900 text-xs whitespace-nowrap border-b-2 border-amber-300">[ GABARITO OFICIAL — ${turma.nome} ]</td>
+                  ${officialCells}
+                  <td class="py-2 px-2 text-center font-bold text-amber-900 text-xs border-b-2 border-amber-300" id="ofic-count-${turma.id}">0/30</td>
+                  <td class="py-2 px-2 text-center font-bold text-amber-800 text-[11px] border-b-2 border-amber-300">Gabarito</td>
+                </tr>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </div>
+        `;
+        container.appendChild(section);
+      });
+      updateAllScores();
+    }
+
+    window.goToDitado = function(tId) {
+      currentDitadoTurmaId = tId;
+      currentDitadoStudentIdx = 0;
+      renderTabs();
+      btnModeDitado.click();
+    };
+
+    function updateAllScores() {
+      TURMAS_DATA.forEach(t => {
+        const ofic = state.officialByTurma[t.id];
+        const filledOficCount = ofic.filter(x => x && x.trim() !== "").length;
+        const oficCountEl = document.getElementById(`ofic-count-${t.id}`);
+        if (oficCountEl) oficCountEl.textContent = `${filledOficCount}/30`;
+
+        t.alunos.forEach(a => {
+          let acertos = 0;
+          let respondidas = 0;
+          for (let q = 0; q < 30; q++) {
+            const stuVal = (state.answers[t.id][a.num][q] || "").trim().toUpperCase();
+            const ofcVal = (ofic[q] || "").trim().toUpperCase();
+            if (stuVal) respondidas++;
+            if (stuVal && ofcVal && (ofcVal === "*" || stuVal === ofcVal)) acertos++;
+          }
+
+          const scoreEl = document.getElementById(`score-${t.id}-${a.num}`);
+          const pctEl = document.getElementById(`pct-${t.id}-${a.num}`);
+          if (scoreEl && pctEl) {
+            if (filledOficCount > 0 && respondidas > 0) {
+              scoreEl.textContent = `${acertos} / ${filledOficCount}`;
+              pctEl.textContent = `${((acertos / filledOficCount) * 100).toFixed(1)}%`;
+            } else {
+              scoreEl.textContent = "—";
+              pctEl.textContent = "—";
+            }
+          }
+        });
+      });
+    }
+
+    // Copiar Texto para o Chat
+    document.getElementById("btnCopyChat").addEventListener("click", () => {
+      let text = "MARATONA 2026 — RESPOSTAS PREENCHIDAS:
+
+";
+      TURMAS_DATA.forEach(t => {
+        text += `=== TURMA: ${t.nome} ===
+`;
+        const ofic = state.officialByTurma[t.id];
+        if (ofic.some(x => x !== "")) {
+          text += `GABARITO OFICIAL (${t.nome}): ` + ofic.map(v => v || "-").join("") + "
+";
+        }
+        t.alunos.forEach(a => {
+          const ans = state.answers[t.id][a.num].map(v => v ? v.toUpperCase() : "-").join("");
+          text += `${a.num}	${a.name}	${ans}
+`;
+        });
+        text += "
+";
+      });
+
+      navigator.clipboard.writeText(text).then(() => {
+        alert("✅ Todas as turmas copiadas! É só colar no chat para mim!");
+      }).catch(() => {
+        prompt("Copie abaixo:", text);
+      });
+    });
+
+    // Baixar CSV
+    document.getElementById("btnDownloadCsv").addEventListener("click", () => {
+      let csv = "Turma;Nº;Nome do Aluno;" + Array.from({length: 30}, (_, i) => `Q${String(i+1).padStart(2,'0')}`).join(";") + "
+";
+      TURMAS_DATA.forEach(t => {
+        csv += `${t.nome};★;GABARITO OFICIAL (${t.nome});` + state.officialByTurma[t.id].join(";") + "
+";
+        t.alunos.forEach(a => {
+          csv += `${t.nome};${a.num};${a.name};` + state.answers[t.id][a.num].join(";") + "
+";
+        });
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Gabarito_Maratona_Atualizado.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    renderTabs();
+    loadDitadoStudent();
+  </script>
+</body>
+</html>
